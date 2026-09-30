@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <button class="btn-new" onclick="newSession()">+ New Session</button>
+    <div class="history-label">History</div>
+    <ul id="history-list" class="history-list"></ul>
+  </aside>
+
+  <!-- ── MAIN CANVAS ──────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- STEP 1: Context input & template selection -->
+    <section id="step-1" class="step active">
+      <h2 class="step-title">Document Generator</h2>
+      <textarea id="context-input" placeholder="Paste your source document or context text here..." rows="10"></textarea>
+
+      <div class="template-pills">
+        <button class="pill notice" onclick="selectTemplate('notice')">
+          📄 Notice Template
+        </button>
+        <button class="pill report" onclick="selectTemplate('report')">
+          📊 Report Template
+        </button>
+      </div>
+
+      <div id="step1-error" class="error-msg hidden"></div>
+    </section>
+
+    <!-- STEP 2: Missing fields form -->
+    <section id="step-2" class="step hidden">
+      <h2 class="step-title">Fill in Missing Fields</h2>
+      <p class="step-sub">The following details could not be found in the context. Please fill them in.</p>
+      <form id="missing-form"></form>
+      <div id="step2-error" class="error-msg hidden"></div>
+      <button class="btn-primary" onclick="submitAnswers()">Save & Continue →</button>
+    </section>
+
+    <!-- STEP 3: Preview & confirm -->
+    <section id="step-3" class="step hidden">
+      <h2 class="step-title">Review Extracted Fields</h2>
+      <p class="step-sub">Review all values before generating. Click any cell to edit inline.</p>
+      <table id="preview-table" class="preview-table">
+        <thead><tr><th>Field</th><th>Value</th><th>Source</th></tr></thead>
+        <tbody id="preview-body"></tbody>
+      </table>
+      <div id="step3-error" class="error-msg hidden"></div>
+      <button class="btn-primary" onclick="confirmSession()">Confirm & Generate ↓</button>
+    </section>
+
+    <!-- STEP 4: Generate & download -->
+    <section id="step-4" class="step hidden">
+      <h2 class="step-title">Generate Document</h2>
+      <div class="generate-buttons">
+        <button id="btn-notice" class="btn-generate notice" onclick="generate('notice')">
+          📄 Generate Notice
+        </button>
+        <button id="btn-report" class="btn-generate report" onclick="generate('report')" disabled>
+          📊 Generate Report
+        </button>
+      </div>
+      <div id="job-status" class="job-status"></div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

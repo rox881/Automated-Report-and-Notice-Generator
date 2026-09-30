@@ -1,0 +1,272 @@
+/* ── Reset & Base ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', Inter, sans-serif;
+  font-size: 15px;
+  background: #f8f9fa;
+  color: #111827;
+}
+
+/* ── Sidebar ────────────────────────────────────────────── */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: #202123;
+  color: #ececec;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.btn-new {
+  background: transparent;
+  border: 1px solid #565869;
+  color: #ececec;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  transition: background 0.15s;
+}
+.btn-new:hover { background: #2a2b32; }
+
+.history-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8e8ea0;
+  padding: 4px 4px 0;
+}
+
+.history-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-list li {
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #c5c5d2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s;
+}
+.history-list li:hover { background: #2a2b32; }
+
+/* ── Main Canvas ─────────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 32px;
+  overflow-y: auto;
+}
+
+.step { width: 100%; max-width: 720px; }
+.step.hidden { display: none; }
+.step.active { display: block; }
+
+.step-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.step-sub {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+/* ── Context Textarea ─────────────────────────────────────── */
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 14px;
+  resize: vertical;
+  line-height: 1.6;
+  color: #111827;
+  background: #fff;
+  outline: none;
+  transition: border 0.2s;
+}
+textarea:focus { border-color: #6366f1; }
+
+/* ── Template Pills ──────────────────────────────────────── */
+.template-pills {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pill {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.pill.notice { border-color: #e5e7eb; }
+.pill.notice:hover, .pill.notice.selected { border-color: #2563eb; background: #eff6ff; }
+.pill.report { border-color: #e5e7eb; }
+.pill.report:hover, .pill.report.selected { border-color: #16a34a; background: #f0fdf4; }
+
+/* ── Missing Fields Form ─────────────────────────────────── */
+#missing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.field-row label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.field-row input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s;
+}
+.field-row input:focus { border-color: #6366f1; }
+
+/* ── Preview Table ───────────────────────────────────────── */
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.preview-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: #f3f4f6;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.preview-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+
+.preview-table td[contenteditable="true"] {
+  background: #fffbeb;
+  outline: 1px dashed #d97706;
+  border-radius: 4px;
+  cursor: text;
+}
+
+.badge-llm  { color: #2563eb; font-size: 11px; font-weight: 600; }
+.badge-user { color: #16a34a; font-size: 11px; font-weight: 600; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-primary {
+  padding: 12px 28px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: #374151; }
+
+.generate-buttons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.btn-generate {
+  flex: 1;
+  padding: 18px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-generate.notice { background: #eff6ff; border-color: #2563eb; color: #1d4ed8; }
+.btn-generate.report { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
+.btn-generate:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Job Status ──────────────────────────────────────────── */
+.job-status {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #374151;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.status-badge.done    { background: #dcfce7; color: #15803d; }
+.status-badge.running { background: #fef9c3; color: #a16207; }
+.status-badge.failed  { background: #fee2e2; color: #dc2626; }
+.status-badge.pending { background: #f3f4f6; color: #6b7280; }
+
+/* ── Error ───────────────────────────────────────────────── */
+.error-msg {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #fee2e2;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 13px;
+}
+.hidden { display: none !important; }

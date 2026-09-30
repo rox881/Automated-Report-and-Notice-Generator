@@ -1,0 +1,11 @@
+fastapi==0.115.0
+uvicorn==0.32.0
+pydantic==2.9.2
+pydantic-settings==2.13.1
+sqlalchemy==2.0.36
+docxtpl==0.20.2
+python-docx==1.2.0
+jinja2==3.1.6
+python-multipart==0.0.22
+python-dotenv==1.0.1
+requests==2.32.3

@@ -131,10 +131,10 @@ Report Generator/
 │       │   └── loader.py       # Loads all fields.json at startup, validates tags
 │       │
 │       ├── db/
-│       │   ├── schema.sql      # Sessions, field_values, jobs tables
-│       │   ├── connection.py   # SQLite connection helper
-│       │   ├── sessions_repo.py
-│       │   └── jobs_repo.py
+│       │   ├── models.py        # SQLAlchemy ORM models (Session, FieldValue, Job)
+│       │   ├── connection.py    # SQLAlchemy engine + SessionLocal (SQLite URL)
+│       │   ├── sessions_repo.py # ORM queries for sessions
+│       │   └── jobs_repo.py     # ORM queries for jobs
 │       │
 │       ├── storage/
 │       │   └── file_store.py   # Saves .docx to output/ with versioned filename
@@ -155,37 +155,44 @@ Report Generator/
 
 ---
 
-## SQLite Tables
+## Database: SQLAlchemy ORM + SQLite
 
-```sql
--- One row per user session
-CREATE TABLE sessions (
-    id          TEXT PRIMARY KEY,
-    context     TEXT NOT NULL,
-    status      TEXT NOT NULL,  -- extracted | needs_input | confirmed
-    created_at  TEXT NOT NULL
-);
+**`db/connection.py`** — one line to swap SQLite → Postgres later:
+```python
+DATABASE_URL = "sqlite:///./app.db"   # local dev
+# DATABASE_URL = "postgresql://..."   # swap this when deploying
 
--- One row per field per session
-CREATE TABLE field_values (
-    session_id  TEXT NOT NULL REFERENCES sessions(id),
-    field_key   TEXT NOT NULL,
-    value_json  TEXT,           -- string or JSON list
-    source      TEXT NOT NULL,  -- 'llm' or 'user'
-    PRIMARY KEY (session_id, field_key)
-);
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(bind=engine)
+Base = declarative_base()
+```
 
--- One row per document generation job
-CREATE TABLE jobs (
-    id           TEXT PRIMARY KEY,
-    session_id   TEXT NOT NULL REFERENCES sessions(id),
-    template_id  TEXT NOT NULL, -- 'notice' or 'report'
-    status       TEXT NOT NULL, -- pending | running | done | failed
-    output_path  TEXT,
-    error        TEXT,
-    created_at   TEXT NOT NULL,
-    finished_at  TEXT
-);
+**`db/models.py`** — ORM model classes (replaces `schema.sql`):
+```python
+class Session(Base):
+    __tablename__ = "sessions"
+    id         = Column(String, primary_key=True)
+    context    = Column(Text, nullable=False)
+    status     = Column(String, nullable=False)  # extracted | needs_input | confirmed
+    created_at = Column(String, nullable=False)
+
+class FieldValue(Base):
+    __tablename__ = "field_values"
+    session_id = Column(String, ForeignKey("sessions.id"), primary_key=True)
+    field_key  = Column(String, primary_key=True)
+    value_json = Column(Text)            # string or JSON list
+    source     = Column(String)          # 'llm' or 'user'
+
+class Job(Base):
+    __tablename__ = "jobs"
+    id          = Column(String, primary_key=True)
+    session_id  = Column(String, ForeignKey("sessions.id"))
+    template_id = Column(String)         # 'notice' or 'report'
+    status      = Column(String)         # pending | running | done | failed
+    output_path = Column(String)
+    error       = Column(Text)
+    created_at  = Column(String)
+    finished_at = Column(String)
 ```
 
 ---
