@@ -1,0 +1,116 @@
+{
+  "template_id": "report",
+  "template_name": "Event Report Template",
+  "description": "Comprehensive event report focusing on Discussion, Conclusion, photo captions, and metadata",
+  "fields": [
+    {
+      "key": "event_title",
+      "label": "Event Title",
+      "type": "text",
+      "required": true,
+      "max_chars": 120,
+      "example": "BRICKS TO BOT – AI Workshop for Civil Engineering Students"
+    },
+    {
+      "key": "event_date",
+      "label": "Date",
+      "type": "text",
+      "required": true,
+      "max_chars": 30,
+      "example": "20th August 2026"
+    },
+    {
+      "key": "participant_count",
+      "label": "Number of Participants",
+      "type": "text",
+      "required": true,
+      "max_chars": 10,
+      "example": "23"
+    },
+    {
+      "key": "department",
+      "label": "Department",
+      "type": "text",
+      "required": false,
+      "default": "All",
+      "max_chars": 30,
+      "example": "All"
+    },
+    {
+      "key": "target_audience",
+      "label": "Targeted Audience",
+      "type": "text",
+      "required": false,
+      "default": "AIML Club learners",
+      "max_chars": 60,
+      "example": "AIML Club learners"
+    },
+    {
+      "key": "speakers",
+      "label": "Speakers",
+      "type": "list",
+      "required": true,
+      "max_chars": 200,
+      "example": [
+        "Mr. Nishant Dakua (Club Ambassador)",
+        "Mr. Suraj Yadav (Club Ambassador)"
+      ]
+    },
+    {
+      "key": "introduction",
+      "label": "Introduction",
+      "type": "text",
+      "required": true,
+      "max_chars": 1200,
+      "example": "On 20th August 2026, the APSIT AIML Club..."
+    },
+    {
+      "key": "discussion",
+      "label": "Discussion",
+      "type": "text",
+      "required": true,
+      "max_chars": 3000,
+      "example": "The session commenced with a warm welcome..."
+    },
+    {
+      "key": "conclusion",
+      "label": "Conclusion",
+      "type": "text",
+      "required": true,
+      "max_chars": 1200,
+      "example": "The workshop successfully introduced students..."
+    },
+    {
+      "key": "photo_1_caption",
+      "label": "Photo 1 Caption",
+      "type": "text",
+      "required": false,
+      "default": "Speakers introducing the concepts of AI&ML to the learners",
+      "max_chars": 100
+    },
+    {
+      "key": "photo_2_caption",
+      "label": "Photo 2 Caption",
+      "type": "text",
+      "required": false,
+      "default": "Students engaging in the session",
+      "max_chars": 100
+    },
+    {
+      "key": "photo_3_caption",
+      "label": "Photo 3 Caption",
+      "type": "text",
+      "required": false,
+      "default": "Speaker solving doubts of students",
+      "max_chars": 100
+    },
+    {
+      "key": "photo_4_caption",
+      "label": "Photo 4 Caption",
+      "type": "text",
+      "required": false,
+      "default": "Winner of Mentimeter quiz competition",
+      "max_chars": 100
+    }
+  ]
+}

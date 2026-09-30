@@ -1,0 +1,66 @@
+{
+  "template_id": "notice",
+  "template_name": "Notice Template",
+  "description": "Single-page formal departmental event notice for AIML Club",
+  "fields": [
+    {
+      "key": "academic_year",
+      "label": "Academic Year",
+      "type": "text",
+      "required": true,
+      "max_chars": 15,
+      "example": "2026-27"
+    },
+    {
+      "key": "notice_date",
+      "label": "Notice Date",
+      "type": "text",
+      "required": true,
+      "max_chars": 15,
+      "example": "19/08/2026"
+    },
+    {
+      "key": "session_title",
+      "label": "Session Title",
+      "type": "text",
+      "required": true,
+      "max_chars": 100,
+      "example": "BRICKS TO BOT – AI Workshop for Civil Engineering Students"
+    },
+    {
+      "key": "event_date",
+      "label": "Event Date",
+      "type": "text",
+      "required": true,
+      "max_chars": 30,
+      "example": "20th august"
+    },
+    {
+      "key": "event_time",
+      "label": "Event Time",
+      "type": "text",
+      "required": true,
+      "max_chars": 30,
+      "example": "1:00 PM - 3:30 PM"
+    },
+    {
+      "key": "venue",
+      "label": "Venue / Room",
+      "type": "text",
+      "required": true,
+      "max_chars": 50,
+      "example": "Lab 404"
+    },
+    {
+      "key": "speakers",
+      "label": "Speakers / Conductors",
+      "type": "list",
+      "required": true,
+      "max_chars": 200,
+      "example": [
+        "Mr. Nishant Dakua (Club Ambassador)",
+        "Miss. Suraj Yadav (Club Ambassador)"
+      ]
+    }
+  ]
+}
