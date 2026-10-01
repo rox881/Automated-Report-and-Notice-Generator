@@ -5,12 +5,12 @@ from app.utils.errors import ExtractionError
 
 def complete(system: str, user: str) -> str:
     """
-    Calls the xAI Grok API via its OpenAI-compatible endpoint.
-    Default endpoint: https://api.x.ai/v1/chat/completions
+    Calls the Groq API via its OpenAI-compatible endpoint.
+    Endpoint: https://api.groq.com/openai/v1/chat/completions
     """
-    if not settings.llm_api_key or settings.llm_api_key.startswith("your_"):
+    if not settings.llm_api_key or settings.llm_api_key.startswith("your_") or settings.llm_api_key.startswith("xai-"):
         raise ExtractionError(
-            "Grok API key is missing. Please set LLM_API_KEY in your .env file with your xAI key."
+            "Groq API key is missing or invalid. Please set LLM_API_KEY (starts with 'gsk_') in your .env file."
         )
 
     headers = {
@@ -31,14 +31,14 @@ def complete(system: str, user: str) -> str:
 
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=60)
-        
+
         if response.status_code != 200:
             raise ExtractionError(
-                f"Grok API returned status {response.status_code}: {response.text}"
+                f"Groq API returned status {response.status_code}: {response.text}"
             )
 
         data = response.json()
         return data["choices"][0]["message"]["content"]
 
     except requests.RequestException as e:
-        raise ExtractionError(f"Network error while connecting to Grok API: {e}")
+        raise ExtractionError(f"Network error while connecting to Groq API: {e}")
