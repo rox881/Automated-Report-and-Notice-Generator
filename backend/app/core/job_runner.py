@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from sqlalchemy.orm import Session as DBSession
 
 from app.db import jobs_repo, sessions_repo
 from app.registry.loader import get_fields
@@ -8,14 +7,18 @@ from app.core.filler import fill_template
 from app.storage.file_store import get_output_path
 
 
-def run_job(db: DBSession, job_id: str, session_id: str, template_id: str):
+def run_job(SessionLocal, job_id: str, session_id: str, template_id: str):
     """
-    Executes a single document generation job.
+    Executes a single document generation job in a background thread.
+    Opens its OWN fresh DB session via SessionLocal() — never reuses the
+    request-scoped session that gets closed when the HTTP response is sent.
     Transitions: pending → running → done | failed
     """
-    jobs_repo.update_job(db, job_id, status="running")
-
+    db = SessionLocal()
     try:
+        jobs_repo.update_job(db, job_id, status="running")
+
+        # Fresh read — guaranteed to see all committed field values
         values  = sessions_repo.get_field_values(db, session_id)
         fields  = get_fields(template_id)
         context = build_context(fields, values)
@@ -40,3 +43,6 @@ def run_job(db: DBSession, job_id: str, session_id: str, template_id: str):
             finished_at=finished,
         )
         raise
+
+    finally:
+        db.close()  # Always close the session we opened

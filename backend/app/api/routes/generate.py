@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 from sqlalchemy.orm import Session as DBSession
 
-from app.db.connection import get_db
+from app.db.connection import get_db, SessionLocal
 from app.db import jobs_repo, sessions_repo
 from app.core.job_runner import run_job
 from app.schemas.jobs import JobResponse
@@ -21,8 +21,8 @@ def generate(
 ):
     """
     Starts document generation for a given template.
-    Runs in the background; poll /status/{job_id} for progress.
-    Session must be in 'confirmed' status.
+    Passes SessionLocal factory (not the request-scoped db) to the background
+    task so it opens its own fresh connection — prevents stale data reads.
     """
     session = sessions_repo.get_session(db, session_id)
     if not session:
@@ -34,7 +34,9 @@ def generate(
     created_at = datetime.now(timezone.utc).isoformat()
     job        = jobs_repo.create_job(db, job_id, session_id, template_id, created_at)
 
-    background_tasks.add_task(run_job, db, job_id, session_id, template_id)
+    # Pass SessionLocal factory — NOT the request-scoped db.
+    # run_job opens its own session so it reads fresh committed data.
+    background_tasks.add_task(run_job, SessionLocal, job_id, session_id, template_id)
     return job
 
 

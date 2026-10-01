@@ -5,12 +5,12 @@ from app.utils.errors import ExtractionError
 
 def complete(system: str, user: str) -> str:
     """
-    Calls the Groq API via its OpenAI-compatible endpoint.
-    Endpoint: https://api.groq.com/openai/v1/chat/completions
+    Calls the Groq API (OpenAI-compatible) with JSON mode enforced.
+    JSON mode guarantees the model returns valid JSON with zero preamble or markdown fences.
     """
-    if not settings.llm_api_key or settings.llm_api_key.startswith("your_") or settings.llm_api_key.startswith("xai-"):
+    if not settings.llm_api_key or settings.llm_api_key.startswith("your_"):
         raise ExtractionError(
-            "Groq API key is missing or invalid. Please set LLM_API_KEY (starts with 'gsk_') in your .env file."
+            "Groq API key is missing. Set LLM_API_KEY (starts with 'gsk_') in your .env file."
         )
 
     headers = {
@@ -24,7 +24,8 @@ def complete(system: str, user: str) -> str:
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
-        "temperature": 0.1,  # Low temperature for strict factual extraction
+        "temperature": 0.1,
+        "response_format": {"type": "json_object"},  # Enforce native JSON mode on Groq
     }
 
     url = f"{settings.llm_base_url.rstrip('/')}/chat/completions"
@@ -41,4 +42,4 @@ def complete(system: str, user: str) -> str:
         return data["choices"][0]["message"]["content"]
 
     except requests.RequestException as e:
-        raise ExtractionError(f"Network error while connecting to Groq API: {e}")
+        raise ExtractionError(f"Network error connecting to Groq API: {e}")

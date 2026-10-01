@@ -1,9 +1,12 @@
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 from app.db.models import Base
 
-DATABASE_URL = f"sqlite:///{settings.db_path}"
+# Normalize path with forward slashes for SQLite URI compatibility on Windows
+db_file = Path(settings.db_path).resolve().as_posix()
+DATABASE_URL = f"sqlite:///{db_file}"
 
 engine = create_engine(
     DATABASE_URL,

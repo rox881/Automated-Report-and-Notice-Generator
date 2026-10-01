@@ -270,3 +270,29 @@ textarea:focus { border-color: #6366f1; }
   font-size: 13px;
 }
 .hidden { display: none !important; }
+
+/* ── Required / Optional Badges ─────────────────────────── */
+.required-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #dc2626;
+  margin-left: 4px;
+}
+.optional-badge {
+  font-size: 11px;
+  color: #6b7280;
+  margin-left: 4px;
+}
+
+/* ── History Items ───────────────────────────────────────── */
+.hist-title {
+  font-size: 13px;
+  color: #c5c5d2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hist-date {
+  font-size: 11px;
+  color: #6b7280;
+}

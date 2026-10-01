@@ -14,6 +14,9 @@ def load_all() -> dict[str, list[FieldSpec]]:
     global _registry
     templates_dir = Path(settings.templates_dir)
 
+    if not templates_dir.exists():
+        return _registry
+
     for template_dir in templates_dir.iterdir():
         if not template_dir.is_dir():
             continue

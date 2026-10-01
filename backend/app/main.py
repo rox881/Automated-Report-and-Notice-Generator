@@ -1,8 +1,7 @@
-from pathlib import Path
-
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app.config import ROOT_DIR
 from app.db.connection import init_db
 from app.registry.loader import load_all
 from app.api.routes import sessions, fields, generate, files
@@ -24,5 +23,5 @@ app.include_router(generate.router)
 app.include_router(files.router)
 
 # Serve the frontend as static files at root /
-FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
+FRONTEND_DIR = ROOT_DIR / "frontend"
 app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
