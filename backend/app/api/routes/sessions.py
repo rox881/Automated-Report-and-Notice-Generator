@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session as DBSession
 
 from app.db.connection import get_db
 from app.db import sessions_repo
-from app.schemas.session import SessionCreate, SessionResponse
-from app.core.extractor import extract_fields
+from app.schemas.session import SessionCreate, SessionResponse, ReframeRequest
+from app.core.extractor import extract_fields, reframe_section
 from app.core.gap_checker import find_missing
 from app.registry.loader import get_fields
 
@@ -25,10 +25,9 @@ def create_session(body: SessionCreate, db: DBSession = Depends(get_db)):
 @router.post("/{session_id}/extract")
 def extract(session_id: str, template_id: str, db: DBSession = Depends(get_db)):
     """
-    Runs LLM extraction for a given template and saves field values.
-    Supports two-phase flow: if session is already 'confirmed' (notice done),
-    extracting for report does NOT downgrade the session status.
-    Returns status and list of missing fields with required flag.
+    Runs LLM extraction and report narrative synthesis.
+    Returns status and list of missing FACTUAL fields with required flag.
+    Narrative fields are synthesized directly and reviewed in Step 3.
     """
     session = sessions_repo.get_session(db, session_id)
     if not session:
@@ -37,7 +36,7 @@ def extract(session_id: str, template_id: str, db: DBSession = Depends(get_db)):
     extracted = extract_fields(template_id, session.context)
     sessions_repo.save_field_values(db, session_id, extracted, source="llm")
 
-    fields  = get_fields(template_id)
+    fields = get_fields(template_id)
     missing = find_missing(fields, extracted)
     field_map = {f.key: f for f in fields}
 
@@ -55,9 +54,6 @@ def extract(session_id: str, template_id: str, db: DBSession = Depends(get_db)):
     has_required_missing = any(m["required"] for m in missing_response)
     new_status = "needs_input" if has_required_missing else "extracted"
 
-    # KEY FIX: Never downgrade a confirmed session.
-    # If the session is already confirmed (notice done), keep it confirmed
-    # so the generate endpoint does not block report generation.
     if session.status != "confirmed":
         sessions_repo.update_status(db, session_id, new_status)
 
@@ -65,6 +61,23 @@ def extract(session_id: str, template_id: str, db: DBSession = Depends(get_db)):
         "status": session.status if session.status == "confirmed" else new_status,
         "missing": missing_response,
     }
+
+
+@router.post("/{session_id}/reframe")
+def reframe(session_id: str, body: ReframeRequest, db: DBSession = Depends(get_db)):
+    """
+    Reframes an existing report section (introduction, discussion, conclusion)
+    using AI based on user preset or custom instruction.
+    Saves the updated text directly to the session values in SQLite.
+    """
+    session = sessions_repo.get_session(db, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    reframed = reframe_section(body.section, body.current_text, body.instruction)
+    sessions_repo.save_field_values(db, session_id, {body.section: reframed}, source="user")
+
+    return {"section": body.section, "reframed_text": reframed}
 
 
 @router.get("/{session_id}/preview")
@@ -80,6 +93,7 @@ def preview(session_id: str, template_id: str, db: DBSession = Depends(get_db)):
             "value": values.get(spec.key),
             "source": "llm",
             "required": spec.required,
+            "default": spec.default if hasattr(spec, "default") else None,
         }
         for spec in fields
     ]

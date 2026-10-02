@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Report Generator</title>
+  <title>Academic Report &amp; Notice Generator</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -18,61 +18,181 @@
   <!-- ── MAIN CANVAS ──────────────────────────────────────── -->
   <main class="main">
 
-    <!-- STEP 1: Context input & template selection -->
+    <!-- STEP 1: Context Input -->
     <section id="step-1" class="step active">
       <h2 class="step-title">Document Generator</h2>
-      <textarea id="context-input" placeholder="Paste your source document or context text here..." rows="10"></textarea>
+      <p class="step-sub">Paste event details, circular, draft, or notes below, then select your document type.</p>
+
+      <textarea id="context-input" placeholder="Paste your source document or event context text here..." rows="12"></textarea>
 
       <div class="template-pills">
-        <button class="pill notice" onclick="selectTemplate('notice')">
-          📄 Notice Template
+        <button class="pill notice" onclick="startWorkflow('notice')">
+          📄 Generate Notice
         </button>
-        <button class="pill report" onclick="selectTemplate('report')">
-          📊 Report Template
+        <button class="pill report" onclick="startWorkflow('report')">
+          📊 Generate Report
         </button>
       </div>
 
       <div id="step1-error" class="error-msg hidden"></div>
     </section>
 
-    <!-- STEP 2: Missing fields form (reused for both Notice & Report) -->
+    <!-- STEP 2: Missing Fields -->
     <section id="step-2" class="step hidden">
-      <h2 id="step2-title" class="step-title">Fill in Missing Fields</h2>
+      <h2 id="step2-title" class="step-title">Missing Information</h2>
       <p class="step-sub">
-        The following details could not be found in the context.
-        <span class="required-badge">* Required</span> fields must be filled before continuing.
+        The following details were not found in the context.
+        <span class="required-badge">* Required</span> fields must be filled.
       </p>
       <form id="missing-form"></form>
       <div id="step2-error" class="error-msg hidden"></div>
-      <button class="btn-primary" onclick="submitAnswers()">Save & Continue →</button>
-    </section>
-
-    <!-- STEP 3: Preview & confirm (reused for both Notice & Report) -->
-    <section id="step-3" class="step hidden">
-      <h2 id="step3-title" class="step-title">Review Extracted Fields</h2>
-      <p class="step-sub">Review all values before generating. Click any cell to edit inline.</p>
-      <table id="preview-table" class="preview-table">
-        <thead><tr><th>Field</th><th>Value</th><th>Source</th></tr></thead>
-        <tbody id="preview-body"></tbody>
-      </table>
-      <div id="step3-error" class="error-msg hidden"></div>
-      <button class="btn-primary" onclick="confirmAndProceed()">Confirm & Generate ↓</button>
-    </section>
-
-    <!-- STEP 4: Generate & download -->
-    <section id="step-4" class="step hidden">
-      <h2 class="step-title">Generate Document</h2>
-      <div class="generate-buttons">
-        <button id="btn-notice" class="btn-generate notice" onclick="generate('notice')">
-          📄 Generate Notice
-        </button>
-        <!-- Report triggers its own extract → review → generate flow -->
-        <button id="btn-report" class="btn-generate report" onclick="setupReport()" disabled>
-          📊 Generate Report
-        </button>
+      <div class="step-actions">
+        <button class="btn-secondary" onclick="showStep(1)">← Back to Context</button>
+        <button class="btn-primary" onclick="submitAnswers()">Save &amp; Continue →</button>
       </div>
-      <div id="step4-error" class="error-msg hidden"></div>
+    </section>
+
+    <!-- STEP 3: Two-Pane Live Preview -->
+    <section id="step-3" class="step hidden step-wide">
+
+      <!-- Step 3 Header + nav -->
+      <div class="step3-header">
+        <div>
+          <h2 id="step3-title" class="step-title">Review &amp; Refine Document</h2>
+          <p class="step-sub">Edit fields or narrative on the left — the A4 preview updates live on the right.</p>
+        </div>
+        <div class="step-actions" style="margin-top:0">
+          <button class="btn-secondary" id="step3-back-btn" onclick="goBackFromStep3()">← Back</button>
+          <button class="btn-primary" onclick="confirmAndGenerate()">Confirm &amp; Generate ↓</button>
+        </div>
+      </div>
+
+      <!-- Two-pane layout -->
+      <div class="two-pane">
+
+        <!-- LEFT: Edit Pane -->
+        <div class="edit-pane">
+
+          <!-- Metadata Table -->
+          <div class="pane-card">
+            <div class="pane-card-title">Event Metadata</div>
+            <table id="preview-table" class="preview-table">
+              <thead><tr><th>Field</th><th>Value</th></tr></thead>
+              <tbody id="preview-body"></tbody>
+            </table>
+          </div>
+
+          <!-- Narrative Section (Report Only) -->
+          <div id="narrative-section" class="hidden">
+
+            <!-- Sticky toolbar -->
+            <div class="narrative-toolbar-sticky">
+              <span class="toolbar-label">Format:</span>
+              <button type="button" class="rt-btn" onclick="formatDoc('bold')"><b>B</b></button>
+              <button type="button" class="rt-btn" onclick="formatDoc('italic')"><i>I</i></button>
+              <button type="button" class="rt-btn" onclick="formatDoc('insertUnorderedList')">• List</button>
+              <button type="button" class="rt-btn" onclick="formatDoc('removeFormat')">Clear</button>
+            </div>
+
+            <!-- Introduction -->
+            <div class="narrative-card">
+              <div class="card-label">1. Introduction</div>
+              <div id="editor-introduction" class="narrative-editor" contenteditable="true" data-key="introduction" oninput="schedulePreviewUpdate()"></div>
+              <div class="reframing-panel">
+                <div class="reframing-label">⚡ AI Presets:</div>
+                <div class="preset-chips" data-target="introduction">
+                  <button type="button" class="chip" onclick="reframeSection('introduction','More Formal &amp; Academic')">🎓 Formal</button>
+                  <button type="button" class="chip" onclick="reframeSection('introduction','More Concise and Punchy')">✂️ Concise</button>
+                  <button type="button" class="chip" onclick="reframeSection('introduction','Highlight Speakers &amp; Collaborating Clubs')">🤝 Speakers</button>
+                  <button type="button" class="chip" onclick="reframeSection('introduction','Regenerate Fresh Draft')">🔄 Regenerate</button>
+                </div>
+                <div class="custom-prompt-row">
+                  <input id="prompt-introduction" type="text" placeholder="Custom instruction..." />
+                  <button type="button" class="btn-apply-ai" onclick="applyCustomReframe('introduction')">Apply AI</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Discussion -->
+            <div class="narrative-card">
+              <div class="card-label">2. Discussion</div>
+              <div id="editor-discussion" class="narrative-editor" contenteditable="true" data-key="discussion" oninput="schedulePreviewUpdate()"></div>
+              <div class="reframing-panel">
+                <div class="reframing-label">⚡ AI Presets:</div>
+                <div class="preset-chips" data-target="discussion">
+                  <button type="button" class="chip" onclick="reframeSection('discussion','More Formal &amp; Academic tone')">🎓 Formal &amp; Academic</button>
+                  <button type="button" class="chip" onclick="reframeSection('discussion','More Concise and tight paragraphs')">✂️ Concise / Shorter</button>
+                  <button type="button" class="chip" onclick="reframeSection('discussion','Expand Discussion Details with in-depth technical paragraphs')">📖 Expand Details</button>
+                  <button type="button" class="chip" onclick="reframeSection('discussion','Highlight Tools, AI Stack, and Software with bold keywords')">🛠️ Tools &amp; AI Stack</button>
+                  <button type="button" class="chip" onclick="reframeSection('discussion','Focus on Student Impact, Skills Acquired, and Hands-on Learning')">🎯 Student Impact</button>
+                  <button type="button" class="chip" onclick="reframeSection('discussion','Mention Quiz, Mentimeter Competition, and Doubt Clearing Sessions')">🏆 Quiz &amp; Activities</button>
+                  <button type="button" class="chip" onclick="reframeSection('discussion','Regenerate completely fresh draft from context')">🔄 Regenerate Fresh</button>
+                </div>
+                <div class="custom-prompt-row">
+                  <input id="prompt-discussion" type="text" placeholder="Custom instruction..." />
+                  <button type="button" class="btn-apply-ai" onclick="applyCustomReframe('discussion')">Apply AI</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Conclusion -->
+            <div class="narrative-card">
+              <div class="card-label">3. Conclusion</div>
+              <div id="editor-conclusion" class="narrative-editor" contenteditable="true" data-key="conclusion" oninput="schedulePreviewUpdate()"></div>
+              <div class="reframing-panel">
+                <div class="reframing-label">⚡ AI Presets:</div>
+                <div class="preset-chips" data-target="conclusion">
+                  <button type="button" class="chip" onclick="reframeSection('conclusion','More Formal &amp; Academic summary')">🎓 Formal</button>
+                  <button type="button" class="chip" onclick="reframeSection('conclusion','Short, high-impact concluding remarks')">✂️ High Impact</button>
+                  <button type="button" class="chip" onclick="reframeSection('conclusion','Emphasize student enthusiasm and future engineering applications')">🚀 Future Impact</button>
+                  <button type="button" class="chip" onclick="reframeSection('conclusion','Regenerate Fresh Draft')">🔄 Regenerate</button>
+                </div>
+                <div class="custom-prompt-row">
+                  <input id="prompt-conclusion" type="text" placeholder="Custom instruction..." />
+                  <button type="button" class="btn-apply-ai" onclick="applyCustomReframe('conclusion')">Apply AI</button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /narrative-section -->
+        </div><!-- /edit-pane -->
+
+        <!-- RIGHT: Live A4 Preview Pane -->
+        <div class="preview-pane">
+          <div class="preview-pane-header">
+            <span>Live Preview</span>
+            <span class="preview-note">Editable directly</span>
+          </div>
+          <div class="a4-sheet">
+            <div id="live-preview-content">
+              <!-- Populated by renderA4Preview() -->
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /two-pane -->
+
+      <div id="step3-error" class="error-msg hidden"></div>
+
+      <!-- Bottom nav -->
+      <div class="step-actions" style="margin-top:20px">
+        <button class="btn-secondary" id="step3-back-btn-bottom" onclick="goBackFromStep3()">← Back</button>
+        <button class="btn-primary" onclick="confirmAndGenerate()">Confirm &amp; Generate ↓</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: Generation & Download -->
+    <section id="step-4" class="step hidden">
+      <h2 class="step-title">Document Ready</h2>
+      <p class="step-sub">Your document has been formatted and compiled with your confirmed edits.</p>
+
       <div id="job-status" class="job-status"></div>
+      <div id="step4-error" class="error-msg hidden"></div>
+
+      <div class="step-actions" style="margin-top:24px">
+        <button class="btn-secondary" onclick="showStep(3)">← Back to Preview</button>
+        <button class="btn-new" style="background:#2563eb;color:#fff;border:none" onclick="newSession()">+ Create Another Document</button>
+      </div>
     </section>
 
   </main>

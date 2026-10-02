@@ -13,3 +13,9 @@ class SessionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ReframeRequest(BaseModel):
+    section: str
+    instruction: str
+    current_text: str

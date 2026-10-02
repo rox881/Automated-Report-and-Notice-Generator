@@ -61,11 +61,66 @@ def _extract_json(raw: str) -> dict:
     raise ExtractionError(f"Could not parse JSON from LLM response.\n\nRaw output:\n{raw}")
 
 
+def synthesize_report_narrative(context: str, extracted_metadata: dict) -> dict:
+    """
+    Synthesizes academic Introduction, multi-paragraph Discussion, and Conclusion
+    with dynamic bold highlights tailored to the event context.
+    """
+    prompt_path = _PROMPTS / "report_synthesis.md"
+    if not prompt_path.exists():
+        return {}
+
+    system_prompt = prompt_path.read_text(encoding="utf-8")
+    user_prompt = f"""EVENT METADATA:
+{json.dumps(extracted_metadata, indent=2)}
+
+RAW CONTEXT:
+{context}
+
+Draft the introduction, discussion, and conclusion in JSON format."""
+
+    try:
+        raw = complete(system_prompt, user_prompt)
+        data = _extract_json(raw)
+        return {
+            "introduction": data.get("introduction"),
+            "discussion": data.get("discussion"),
+            "conclusion": data.get("conclusion"),
+        }
+    except Exception as e:
+        # Fallback if synthesis encountered an issue
+        print(f"Narrative synthesis notice: {e}")
+        return {}
+
+
+def reframe_section(section_name: str, current_text: str, instruction: str) -> str:
+    """
+    Reframes an existing report section (Introduction, Discussion, Conclusion)
+    using user instruction or preset choice.
+    """
+    prompt_path = _PROMPTS / "reframe_prompt.md"
+    system_prompt = prompt_path.read_text(encoding="utf-8") if prompt_path.exists() else "You are an expert report editor. Rewrite the text."
+
+    user_prompt = f"""SECTION: {section_name}
+
+USER INSTRUCTION:
+{instruction}
+
+CURRENT SECTION TEXT:
+{current_text}
+
+Provide the rewritten section in JSON."""
+
+    raw = complete(system_prompt, user_prompt)
+    data = _extract_json(raw)
+    return data.get("reframed_text", current_text)
+
+
 def extract_fields(template_id: str, context: str) -> dict:
     """
     Calls the LLM to extract field values from raw context text.
-    Returns a dict: { field_key: value_or_None }
-    Missing/empty LLM values are sanitized to None so the gap_checker can catch them.
+    For report templates, synthesizes Introduction, Discussion, and Conclusion
+    if not already provided in the source text.
     """
     fields = get_fields(template_id)
     fields_spec = build_field_spec_text(fields)
@@ -81,9 +136,22 @@ def extract_fields(template_id: str, context: str) -> dict:
     if "fields" in data and isinstance(data["fields"], dict):
         extracted = data["fields"]
     else:
-        # Flat response — filter to only known field keys
         known_keys = {f.key for f in fields}
         extracted = {k: v for k, v in data.items() if k in known_keys}
 
-    # Sanitize all values: convert fake "N/A", "", "None" -> None
-    return {key: _sanitize(val) for key, val in extracted.items()}
+    # Sanitize all extracted values
+    result = {key: _sanitize(val) for key, val in extracted.items()}
+
+    # If this is the report template, synthesize narrative fields if empty
+    if template_id == "report":
+        narratives_empty = any(
+            result.get(k) is None
+            for k in ("introduction", "discussion", "conclusion")
+        )
+        if narratives_empty:
+            narrative = synthesize_report_narrative(context, result)
+            for k in ("introduction", "discussion", "conclusion"):
+                if result.get(k) is None and narrative.get(k):
+                    result[k] = narrative[k]
+
+    return result
