@@ -323,6 +323,14 @@ textarea:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
 }
+.narrative-editor:empty:before {
+  content: attr(placeholder);
+  color: #94a3b8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-style: italic;
+  pointer-events: none;
+}
 
 /* Reframing Panel */
 .reframing-panel {

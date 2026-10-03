@@ -74,7 +74,14 @@ def reframe(session_id: str, body: ReframeRequest, db: DBSession = Depends(get_d
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    reframed = reframe_section(body.section, body.current_text, body.instruction)
+    metadata = sessions_repo.get_field_values(db, session_id)
+    reframed = reframe_section(
+        section_name=body.section,
+        current_text=body.current_text,
+        instruction=body.instruction,
+        context=session.context,
+        metadata=metadata,
+    )
     sessions_repo.save_field_values(db, session_id, {body.section: reframed}, source="user")
 
     return {"section": body.section, "reframed_text": reframed}

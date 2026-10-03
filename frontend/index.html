@@ -97,7 +97,7 @@
             <!-- Introduction -->
             <div class="narrative-card">
               <div class="card-label">1. Introduction</div>
-              <div id="editor-introduction" class="narrative-editor" contenteditable="true" data-key="introduction" oninput="schedulePreviewUpdate()"></div>
+              <div id="editor-introduction" class="narrative-editor" contenteditable="true" data-key="introduction" placeholder="Type introduction notes or click an AI preset below..." oninput="schedulePreviewUpdate()"></div>
               <div class="reframing-panel">
                 <div class="reframing-label">⚡ AI Presets:</div>
                 <div class="preset-chips" data-target="introduction">
@@ -116,7 +116,7 @@
             <!-- Discussion -->
             <div class="narrative-card">
               <div class="card-label">2. Discussion</div>
-              <div id="editor-discussion" class="narrative-editor" contenteditable="true" data-key="discussion" oninput="schedulePreviewUpdate()"></div>
+              <div id="editor-discussion" class="narrative-editor" contenteditable="true" data-key="discussion" placeholder="Click any AI preset below (e.g. '🔄 Regenerate Fresh') or type discussion points..." oninput="schedulePreviewUpdate()"></div>
               <div class="reframing-panel">
                 <div class="reframing-label">⚡ AI Presets:</div>
                 <div class="preset-chips" data-target="discussion">
@@ -138,7 +138,7 @@
             <!-- Conclusion -->
             <div class="narrative-card">
               <div class="card-label">3. Conclusion</div>
-              <div id="editor-conclusion" class="narrative-editor" contenteditable="true" data-key="conclusion" oninput="schedulePreviewUpdate()"></div>
+              <div id="editor-conclusion" class="narrative-editor" contenteditable="true" data-key="conclusion" placeholder="Type conclusion or click an AI preset below..." oninput="schedulePreviewUpdate()"></div>
               <div class="reframing-panel">
                 <div class="reframing-label">⚡ AI Presets:</div>
                 <div class="preset-chips" data-target="conclusion">
@@ -173,12 +173,6 @@
       </div><!-- /two-pane -->
 
       <div id="step3-error" class="error-msg hidden"></div>
-
-      <!-- Bottom nav -->
-      <div class="step-actions" style="margin-top:20px">
-        <button class="btn-secondary" id="step3-back-btn-bottom" onclick="goBackFromStep3()">← Back</button>
-        <button class="btn-primary" onclick="confirmAndGenerate()">Confirm &amp; Generate ↓</button>
-      </div>
     </section>
 
     <!-- STEP 4: Generation & Download -->

@@ -25,6 +25,7 @@ def complete(system: str, user: str) -> str:
             {"role": "user", "content": user},
         ],
         "temperature": 0.1,
+        "max_tokens": 4096,
         "response_format": {"type": "json_object"},  # Enforce native JSON mode on Groq
     }
 

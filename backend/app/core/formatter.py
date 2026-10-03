@@ -90,8 +90,15 @@ def build_context(fields: list[FieldSpec], values: dict) -> dict:
         value = values.get(spec.key)
         context[spec.key] = format_value(spec, value)
 
-    # speakers_block: newline-joined string for {{ speakers_block }} tag in notice template
+    # speakers_block: numbered newline-joined RichText for {{ speakers_block }} tag
     if "speakers" in context and isinstance(context["speakers"], list):
-        context["speakers_block"] = "\n".join(context["speakers"])
+        formatted = []
+        for i, s in enumerate(context["speakers"]):
+            s_clean = str(s).strip()
+            if re.match(r"^\d+\.", s_clean):
+                formatted.append(s_clean)
+            else:
+                formatted.append(f"{i + 1}. {s_clean}")
+        context["speakers_block"] = text_to_richtext("\n".join(formatted))
 
     return context

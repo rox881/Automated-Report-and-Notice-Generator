@@ -88,32 +88,56 @@ Draft the introduction, discussion, and conclusion in JSON format."""
             "conclusion": data.get("conclusion"),
         }
     except Exception as e:
-        # Fallback if synthesis encountered an issue
-        print(f"Narrative synthesis notice: {e}")
+        print(f"[ERROR] Narrative synthesis failed: {e}")
         return {}
 
 
-def reframe_section(section_name: str, current_text: str, instruction: str) -> str:
+def reframe_section(
+    section_name: str,
+    current_text: str,
+    instruction: str,
+    context: str = "",
+    metadata: dict = None,
+) -> str:
     """
-    Reframes an existing report section (Introduction, Discussion, Conclusion)
-    using user instruction or preset choice.
+    Reframes or regenerates an existing report section (Introduction, Discussion, Conclusion)
+    using user instruction or preset choice, backed by full event context and metadata.
     """
     prompt_path = _PROMPTS / "reframe_prompt.md"
-    system_prompt = prompt_path.read_text(encoding="utf-8") if prompt_path.exists() else "You are an expert report editor. Rewrite the text."
+    system_prompt = (
+        prompt_path.read_text(encoding="utf-8")
+        if prompt_path.exists()
+        else "You are an expert report editor. Rewrite the text."
+    )
 
-    user_prompt = f"""SECTION: {section_name}
+    metadata_str = json.dumps(metadata or {}, indent=2)
+
+    user_prompt = f"""EVENT METADATA:
+{metadata_str}
+
+EVENT CONTEXT:
+{context or 'No additional raw context provided.'}
+
+SECTION TO GENERATE/REFRAME: {section_name}
 
 USER INSTRUCTION:
 {instruction}
 
-CURRENT SECTION TEXT:
-{current_text}
+CURRENT SECTION TEXT (may be empty):
+{current_text or '(None - draft from scratch)'}
 
-Provide the rewritten section in JSON."""
+Provide the section in JSON with key 'reframed_text'."""
 
-    raw = complete(system_prompt, user_prompt)
-    data = _extract_json(raw)
-    return data.get("reframed_text", current_text)
+    try:
+        raw = complete(system_prompt, user_prompt)
+        data = _extract_json(raw)
+        reframed = data.get("reframed_text")
+        if not reframed and current_text:
+            return current_text
+        return reframed or ""
+    except Exception as e:
+        print(f"[ERROR] reframe_section failed: {e}")
+        return current_text or ""
 
 
 def extract_fields(template_id: str, context: str) -> dict:
@@ -145,13 +169,13 @@ def extract_fields(template_id: str, context: str) -> dict:
     # If this is the report template, synthesize narrative fields if empty
     if template_id == "report":
         narratives_empty = any(
-            result.get(k) is None
+            result.get(k) is None or str(result.get(k)).strip() == ""
             for k in ("introduction", "discussion", "conclusion")
         )
         if narratives_empty:
             narrative = synthesize_report_narrative(context, result)
             for k in ("introduction", "discussion", "conclusion"):
-                if result.get(k) is None and narrative.get(k):
+                if (result.get(k) is None or str(result.get(k)).strip() == "") and narrative.get(k):
                     result[k] = narrative[k]
 
     return result

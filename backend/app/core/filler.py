@@ -3,6 +3,7 @@ from docxtpl import DocxTemplate
 
 from app.config import settings
 from app.utils.errors import FillerError
+from app.core.template_tagger import ensure_report_template_tagged
 
 
 def fill_template(template_id: str, context: dict, output_path: str) -> str:
@@ -16,6 +17,9 @@ def fill_template(template_id: str, context: dict, output_path: str) -> str:
 
     if not template_file.exists():
         raise FillerError(f"Template file not found: {template_file}")
+
+    if template_id == "report":
+        ensure_report_template_tagged(template_file)
 
     try:
         tpl = DocxTemplate(str(template_file))

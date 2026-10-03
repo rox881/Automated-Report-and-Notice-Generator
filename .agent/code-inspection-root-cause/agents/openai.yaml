@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Inspection Root Cause"
+  short_description: "Inspect bugs and identify their root cause"
+  default_prompt: "Use $code-inspection-root-cause to inspect this issue read-only and identify its root cause before proposing a fix."

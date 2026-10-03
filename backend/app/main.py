@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import ROOT_DIR
 from app.db.connection import init_db
 from app.registry.loader import load_all
+from app.core.template_tagger import ensure_report_template_tagged
 from app.api.routes import sessions, fields, generate, files
 
 app = FastAPI(title="Report Generator API", version="1.0.0")
@@ -11,9 +12,10 @@ app = FastAPI(title="Report Generator API", version="1.0.0")
 
 @app.on_event("startup")
 def startup():
-    """Initializes the SQLite DB tables and loads all template registries on start."""
+    """Initializes the SQLite DB tables, tags templates if needed, and loads registries."""
     init_db()
     load_all()
+    ensure_report_template_tagged()
 
 
 # API routers
