@@ -166,16 +166,24 @@ def extract_fields(template_id: str, context: str) -> dict:
     # Sanitize all extracted values
     result = {key: _sanitize(val) for key, val in extracted.items()}
 
-    # If this is the report template, synthesize narrative fields if empty
+    # If this is the report template, synthesize narrative fields if empty or too brief
     if template_id == "report":
-        narratives_empty = any(
-            result.get(k) is None or str(result.get(k)).strip() == ""
+        def _needs_narrative(k):
+            val = result.get(k)
+            if val is None:
+                return True
+            s = str(val).strip()
+            # If empty or too brief to be an academic report narrative (e.g., just an event title or short fragment)
+            return len(s) < 100
+
+        narratives_needed = any(
+            _needs_narrative(k)
             for k in ("introduction", "discussion", "conclusion")
         )
-        if narratives_empty:
+        if narratives_needed:
             narrative = synthesize_report_narrative(context, result)
             for k in ("introduction", "discussion", "conclusion"):
-                if (result.get(k) is None or str(result.get(k)).strip() == "") and narrative.get(k):
+                if _needs_narrative(k) and narrative.get(k):
                     result[k] = narrative[k]
 
     return result

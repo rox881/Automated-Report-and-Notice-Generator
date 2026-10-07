@@ -20,6 +20,7 @@ STYLE & FORMATTING GUIDELINES
      * Paragraph 6 (if relevant): Quiz / Mentimeter competition and closing highlights.
    - "conclusion": Exactly 1 impactful concluding paragraph (approx 100-150 words) synthesizing learner takeaways, practical value, and concluding remarks.
 4. ADAPTABILITY: Dynamically adapt the concepts to the specific event context (whether Civil Engineering, Web Dev, Cloud, Data Science, or Hackathons). Do not invent false dates or different speakers from what is specified.
+5. EXPANSION ON SPARSE CONTEXT: When the RAW CONTEXT is brief or contains only metadata/bullet points, actively expand on the thematic relevance of the event title and technologies implied. Generate comprehensive, multi-sentence paragraphs ensuring thorough, publication-grade academic report content. Never output placeholder phrases or single-sentence sections.
 
 OUTPUT FORMAT
 Return ONLY valid JSON (no markdown fences, no preamble):

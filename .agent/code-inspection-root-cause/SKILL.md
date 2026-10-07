@@ -52,7 +52,7 @@ Find:
 
 Explain why the operation failed.
 
-### 3. Trace the Relevant Input
+* [ ] 3. Trace the Relevant Input
 
 Trace only the necessary path:
 
