@@ -60,8 +60,19 @@ def format_value(spec: FieldSpec, value):
 
     if spec.type == "date":
         return _format_date(str(value))
+    
     elif spec.type == "list":
-        return value if isinstance(value, list) else [str(value)]
+        if isinstance(value, list):
+            items = []
+            for item in value:
+                # If an item inside the list itself contains commas or newlines, split it
+                items.extend([s.strip() for s in re.split(r",|\n", str(item)) if s.strip()])
+            return items
+        elif isinstance(value, str):
+            # Split comma-separated or newline-separated text into individual list entries
+            return [s.strip() for s in re.split(r",|\n", value) if s.strip()]
+        return []
+    
     elif spec.type in ("text", "number"):
         return str(value).strip()
 
@@ -91,14 +102,12 @@ def build_context(fields: list[FieldSpec], values: dict) -> dict:
         context[spec.key] = format_value(spec, value)
 
     # speakers_block: numbered newline-joined RichText for {{ speakers_block }} tag
+    # Keep speakers as a clean list of RichText/strings for Jinja looping in Word
     if "speakers" in context and isinstance(context["speakers"], list):
-        formatted = []
-        for i, s in enumerate(context["speakers"]):
-            s_clean = str(s).strip()
-            if re.match(r"^\d+\.", s_clean):
-                formatted.append(s_clean)
-            else:
-                formatted.append(f"{i + 1}. {s_clean}")
-        context["speakers_block"] = text_to_richtext("\n".join(formatted))
+        context["speakers"] = [
+            text_to_richtext(str(s).strip()) 
+            for s in context["speakers"] 
+            if str(s).strip()
+        ]
 
     return context
