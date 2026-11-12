@@ -41,11 +41,11 @@ def text_to_richtext(text: str) -> RichText:
         if not token:
             continue
         if token.startswith("**") and token.endswith("**") and len(token) >= 4:
-            rt.add(token[2:-2], bold=True)
+            rt.add(token[2:-2], bold=True, size=28)
         elif token.startswith("*") and token.endswith("*") and len(token) >= 2:
-            rt.add(token[1:-1], italic=True)
+            rt.add(token[1:-1], italic=True,size=28)
         else:
-            rt.add(token)
+            rt.add(token ,size=28)
 
     return rt
 
