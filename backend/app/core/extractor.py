@@ -14,6 +14,13 @@ _PROMPTS = Path(__file__).parent.parent / "llm" / "prompts"
 _EMPTY_STRINGS = {"", "none", "null", "n/a", "tbd", "not specified",
                   "not mentioned", "not found", "unknown", "na"}
 
+_NARRATIVE_KEYS = (
+    "introduction",
+    "discussion",
+    "conclusion"
+)
+
+MIN_NARRATIVE_WORDS = 250
 
 def _sanitize(value):
     """
@@ -28,6 +35,24 @@ def _sanitize(value):
         cleaned = [v for v in value if str(v).strip().lower() not in _EMPTY_STRINGS]
         return cleaned if cleaned else None
     return value
+
+def _count_words(value):
+    """
+    Counts actual words in a narrative section.
+    Images and image objects are not included.
+    """
+    if not value:
+        return 0
+
+    text = str(value).strip()
+
+    words = re.findall(
+        r"\b[\w]+(?:[-'’][\w]+)*\b",
+        text,
+        flags=re.UNICODE
+    )
+
+    return len(words)
 
 
 def _extract_json(raw: str) -> dict:
@@ -71,8 +96,16 @@ def synthesize_report_narrative(context: str, extracted_metadata: dict) -> dict:
         return {}
 
     system_prompt = prompt_path.read_text(encoding="utf-8")
+
+    # Remove existing narrative sections from metadata
+    metadata_for_prompt = {
+        key: value
+        for key, value in extracted_metadata.items()
+        if key not in _NARRATIVE_KEYS
+    }
+
     user_prompt = f"""EVENT METADATA:
-{json.dumps(extracted_metadata, indent=2)}
+{json.dumps(metadata_for_prompt, indent=2)}
 
 RAW CONTEXT:
 {context}
@@ -97,7 +130,7 @@ def reframe_section(
     current_text: str,
     instruction: str,
     context: str = "",
-    metadata: dict = None,
+    metadata: dict | None = None,
 ) -> str:
     """
     Reframes or regenerates an existing report section (Introduction, Discussion, Conclusion)
@@ -167,23 +200,29 @@ def extract_fields(template_id: str, context: str) -> dict:
     result = {key: _sanitize(val) for key, val in extracted.items()}
 
     # If this is the report template, synthesize narrative fields if empty or too brief
+    
     if template_id == "report":
-        def _needs_narrative(k):
-            val = result.get(k)
-            if val is None:
-                return True
-            s = str(val).strip()
-            # If empty or too brief to be an academic report narrative (e.g., just an event title or short fragment)
-            return len(s) < 100
+
+        # Only Introduction and Discussion need regeneration.
+        sections_to_check = ("introduction", "discussion")
+
+        def _needs_narrative(key):
+            return _count_words(result.get(key)) < MIN_NARRATIVE_WORDS
 
         narratives_needed = any(
-            _needs_narrative(k)
-            for k in ("introduction", "discussion", "conclusion")
+            _needs_narrative(key)
+            for key in sections_to_check
         )
+
         if narratives_needed:
             narrative = synthesize_report_narrative(context, result)
-            for k in ("introduction", "discussion", "conclusion"):
-                if _needs_narrative(k) and narrative.get(k):
-                    result[k] = narrative[k]
+
+            for key in sections_to_check:
+                if _needs_narrative(key):
+                    generated_text = narrative.get(key)
+
+                    if isinstance(generated_text, str) and generated_text.strip():
+                        result[key] = generated_text.strip()
+
 
     return result
