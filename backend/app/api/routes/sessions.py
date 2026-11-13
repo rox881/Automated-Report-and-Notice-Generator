@@ -79,7 +79,7 @@ def reframe(session_id: str, body: ReframeRequest, db: DBSession = Depends(get_d
         section_name=body.section,
         current_text=body.current_text,
         instruction=body.instruction,
-        context=session.context,
+        context=str(session.context or ""),
         metadata=metadata,
     )
     sessions_repo.save_field_values(db, session_id, {body.section: reframed}, source="user")
@@ -118,10 +118,13 @@ def list_sessions(db: DBSession = Depends(get_db)):
             or values.get("session_title")
             or "Untitled"
         )
+        detected_template = "report" if "introduction" in values else "notice"
         result.append({
             "id": s.id,
             "status": s.status,
             "created_at": s.created_at,
             "event_title": event_title,
+            "template_id": detected_template,  # <-- ADD THIS LINE
+            "context": s.context,              # <-- ADD THIS LINE
         })
     return result

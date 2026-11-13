@@ -515,11 +515,15 @@ async function pollJobStatus(jobId) {
 }
 
 // ── Sidebar History ───────────────────────────────────────
+let historyMap = {}; // <-- 1. Added right above loadHistory()
+
 async function loadHistory() {
   try {
     const sessions = await api('/api/sessions');
+    historyMap = {};
     const list = document.getElementById('history-list');
     list.innerHTML = sessions.map(s => {
+      historyMap[s.id] = s;
       const date = new Date(s.created_at).toLocaleDateString('en-IN', {
         day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
       });
@@ -535,10 +539,22 @@ async function loadHistory() {
 }
 
 function restoreSession(id) {
+  const saved    = historyMap[id] || {};
   sessionId      = id;
   hadMissingStep = false;
+
+  // 1. Sets the template ('report' or 'notice') — match the variable name from Step 1
+  if (saved.template_id) {
+    templateId = saved.template_id;
+  }
+
+  // 2. Fills your original pasted notes back into the Step 1 text box
+  const inputBox = document.querySelector('textarea');
+  if (inputBox && saved.context) {
+    inputBox.value = saved.context;
+  }
+
   loadReviewStep().then(() => showStep(3));
 }
-
 // ── Init ──────────────────────────────────────────────────
 loadHistory();
