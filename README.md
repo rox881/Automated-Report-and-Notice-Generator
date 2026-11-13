@@ -48,7 +48,31 @@ python -m uvicorn app.main:app --reload --app-dir backend
 
 Navigate to **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser.
 
----
+### 5. Outputs
+
+Adding the Context Text for Notice & Report Generation
+
+![1794571325931](image/README/1794571325931.png)
+
+Adding Missing required felids 
+
+![1794571354517](image/README/1794571354517.png)
+
+Preview Of Output with added details Of Notice and Report
+
+![1794571508983](image/README/1794571508983.png)
+
+![1794571666090](image/README/1794571666090.png)
+
+Using Preset U can also Update text in the report
+
+![1794571815879](image/README/1794571815879.png)
+
+Generated Output Notice
+
+![1794571565626](image/README/1794571565626.png)
+
+![1794571601633](image/README/1794571601633.png)![1794571713636](image/README/1794571713636.png)![1794571739445](image/README/1794571739445.png)![1794571764736](image/README/1794571764736.png)
 
 ## 🚀 How to Use
 
@@ -63,6 +87,7 @@ Paste Context ──► Select Template ──► Verify / Fill Missing ──�
 5. **Download**: Click **Generate** to get the filled `.docx` file with all header logos, formatting, and photos intact.
 
 ---
+
 
 ## 📁 Project Directory
 
